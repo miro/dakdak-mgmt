@@ -1,0 +1,68 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<polymer-element name="dakdak-spot-list" attributes="spots">
+
+  <template>
+    <link rel="stylesheet" href="dakdak-spot-list.css">
+    <dakdak-globals id="globals"></dakdak-globals>
+
+    <core-ajax
+      auto
+      id="ajax-spot-all"
+      url="{{$.globals.config.apiUrl}}spot"
+      handleAs="json"
+      on-core-response="{{handleResponse}}"
+      response="{{spots}}"></core-ajax>
+
+    <core-ajax
+      id="ajax-spot-create"
+      url="{{$.globals.config.apiUrl}}spot"
+      method="POST"
+      handleAs="json"
+      params="{{newSpot}}"
+      on-core-response="{{newSpotResponse}}"></core-ajax>
+
+
+
+    <h3>Spotit</h3>
+    <template repeat="{{ spot in spots }}">
+      <dakdak-spot-info spot="{{ spot }}"></dakdak-spot-info>
+    </template>
+
+    <h4>Luo uusi</h4>
+    <paper-input
+      label="Spotin nimi"
+      floatingLabel
+      value="{{newSpot.name}}"></paper-input>
+
+    <paper-button raised on-tap="{{createNewSpot}}" label="Luo">Luo Spotti</paper-button>
+
+  </template>
+
+  <script>
+    (function () {
+      Polymer({
+        created: function() {
+          this.newSpot = {};
+        },
+        ready: function(args) {
+          var self = this;
+
+          this.addEventListener('spot-deleted', function(event) {
+            self.spots = _.filter(self.spots, function(spot) {
+              return spot.id !== event.detail.id;
+            });
+          })
+        },
+
+        createNewSpot: function() {
+          this.$['ajax-spot-create'].go();
+        },
+
+        newSpotResponse: function(event, result) {
+          this.spots.push(result.response);
+        }
+      });
+    })();
+  </script>
+</polymer-element>

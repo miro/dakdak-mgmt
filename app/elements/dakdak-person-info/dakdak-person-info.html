@@ -1,0 +1,84 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<polymer-element name="dakdak-person-info" attributes="person">
+  <template>
+    <dakdak-globals id="globals"></dakdak-globals>
+    <link rel="stylesheet" href="dakdak-person-info.css">
+
+    <core-ajax
+      id="ajax-delete"
+      url="{{$.globals.config.apiUrl}}person/{{person.id}}"
+      method="DELETE"
+      on-core-response="{{deletedHandler}}"></core-ajax>
+    <core-ajax
+      id="ajax-save"
+      url="{{$.globals.config.apiUrl}}person/{{person.id}}"
+      method="PUT"
+      handleAs="json"
+      params="{{person}}"
+      on-core-response="{{savedHandler}}"></core-ajax>
+
+
+    <template if="{{!editMode}}">
+      <p>{{person.id}}: {{person.displayName}} / {{person.fullName}}</p>
+      <paper-button raised on-click="{{toggleEditMode}}">Muokkaa</paper-button>
+    </template>
+    <template if="{{editMode}}">
+      <paper-input
+        label="Henkilön näytettävä nimi"
+        floatingLabel
+        value="{{person.displayName}}"></paper-input>
+      <paper-input
+        label="Henkilön koko nimi"
+        floatingLabel
+        value="{{person.fullName}}"></paper-input>
+      <paper-button raised on-click="{{savePerson}}">Tallenna</paper-button>
+      <paper-button raised on-click="{{deletePerson}}">Poista</paper-button>
+    </template>
+
+    <paper-toast id="toast" text="{{toastText}}">
+    </paper-toast>
+
+  </template>
+  <script>
+    (function () {
+      Polymer({
+        ready: function() {
+          this.editMode = false;
+          this.toastText = '';
+        },
+
+        personChanged: function(keke, esa) {
+        },
+
+        toggleEditMode: function() {
+          this.editMode = !this.editMode;
+        },
+
+        savePerson: function() {
+          this.$['ajax-save'].go();
+        },
+
+        deletePerson: function() {
+          this.$['ajax-delete'].go();
+        },
+
+        savedHandler: function(event, result) {
+          this.person = _.extend(this.person, result.response);
+          this.editMode = false;
+
+          this.showToast('Muutokset henkilöön tallennettu');
+        },
+
+        deletedHandler: function(event, result) {
+          this.fire('person-deleted', { id: this.person.id });
+        },
+
+        showToast: function(text) {
+          this.toastText = text;
+          this.$.toast.show(3000);
+        }
+      });
+    })();
+  </script>
+</polymer-element>

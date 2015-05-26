@@ -1,0 +1,72 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<polymer-element name="dakdak-person-list" attributes="persons">
+
+  <template>
+    <link rel="stylesheet" href="dakdak-person-list.css">
+    <dakdak-globals id="globals"></dakdak-globals>
+
+    <core-ajax
+      auto
+      id="ajax-person-all"
+      url="{{$.globals.config.apiUrl}}person"
+      handleAs="json"
+      on-core-response="{{handleResponse}}"
+      response="{{persons}}"></core-ajax>
+
+    <core-ajax
+      id="ajax-person-create"
+      url="{{$.globals.config.apiUrl}}person"
+      method="POST"
+      handleAs="json"
+      params="{{newPerson}}"
+      on-core-response="{{newPersonResponse}}"></core-ajax>
+
+
+
+    <h3>Henkilöt</h3>
+    <template repeat="{{ person in persons }}">
+      <dakdak-person-info person="{{person}}"></dakdak-person-info>
+    </template>
+
+    <h4>Luo uusi</h4>
+    <paper-input
+      label="Henkilön näytettävä nimi"
+      floatingLabel
+      value="{{newPerson.fullName}}"></paper-input>
+    <paper-input
+      label="Henkilön koko nimi"
+      floatingLabel
+      value="{{newPerson.displayName}}"></paper-input>
+
+    <paper-button raised on-tap="{{createNewPerson}}" label="Luo">Luo henkilö</paper-button>
+
+  </template>
+
+  <script>
+    (function () {
+      Polymer({
+        created: function() {
+          this.newPerson = {};
+        },
+        ready: function(args) {
+          var self = this;
+
+          this.addEventListener('person-deleted', function(event) {
+            self.persons = _.filter(self.persons, function(person) {
+              return person.id !== event.detail.id;
+            });
+          })
+        },
+
+        createNewPerson: function() {
+          this.$['ajax-person-create'].go();
+        },
+
+        newPersonResponse: function(event, result) {
+          this.persons.push(result.response);
+        }
+      });
+    })();
+  </script>
+</polymer-element>

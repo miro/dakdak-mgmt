@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>dakdak polymer test</title>
+  <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+  <!-- build:css styles/main.css -->
+  <link rel="stylesheet" href="styles/main.css">
+  <!-- endbuild-->
+
+  <script src="bower_components/lodash/lodash.min.js"></script>
+
+  <!-- build:js bower_components/webcomponentsjs/webcomponents.min.js -->
+  <script src="bower_components/webcomponentsjs/webcomponents.js"></script>
+  <!-- endbuild -->
+
+  <!-- will be replaced with elements/elements.vulcanized.html -->
+  <link rel="import" href="elements/elements.html">
+  <!-- endreplace-->
+</head>
+
+<body unresolved fullbleed layout vertical>
+  <template is="auto-binding" id="app">
+
+    <!-- Route controller. -->
+    <flatiron-director route="{{route}}" autoHash></flatiron-director>
+
+    <core-drawer-panel>
+
+      <!-- Drawer -->
+      <core-header-panel drawer>
+
+        <!-- Drawer Toolbar -->
+        <core-toolbar>Menu</core-toolbar>
+
+        <!-- Drawer Content -->
+        <core-menu valueattr="hash" selected="{{route}}">
+          <template repeat="{{page in pages}}">
+            <paper-item hash="{{page.hash}}" noink>
+              <core-icon icon="label-outline"></core-icon>
+              <a href="#{{page.hash}}">{{page.name}}</a>
+            </paper-item>
+          </template>
+        </core-menu>
+
+      </core-header-panel>
+
+
+      <!-- Main -->
+      <core-header-panel main>
+
+        <!-- Main Toolbar -->
+        <core-toolbar tool>
+          <paper-icon-button icon="menu" core-drawer-toggle></paper-icon-button>
+
+          <span>{{appName}} — {{selectedPage.page.name}}</span>
+          <core-icon-button icon="refresh"></core-icon-button>
+          <core-icon-button icon="add"></core-icon-button>
+
+        </core-toolbar>
+
+        <!-- Main Content -->
+        <div layout horizontal center-center fit>
+          <dakdak-person-list></dakdak-person-list>
+          <dakdak-spot-list></dakdak-spot-list>
+        </div>
+
+      </core-header-panel>
+    </core-drawer-panel>
+
+  </template>
+
+  <script>
+    var template = document.querySelector('template[is="auto-binding"]');
+    template.pages = [
+      {name: 'Koti', hash: 'home'},
+      {name: 'Käyttäjät', hash: 'users'},
+      {name: 'app', hash: 'three'}
+    ];
+  </script>
+
+  <!-- build:js scripts/app.js -->
+  <script src="scripts/app.js"></script>
+  <!-- endbuild-->
+</body>
+
+</html>

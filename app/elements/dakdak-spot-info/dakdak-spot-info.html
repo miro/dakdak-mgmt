@@ -1,0 +1,113 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<polymer-element name="dakdak-spot-info" attributes="spot">
+  <template>
+    <dakdak-globals id="globals"></dakdak-globals>
+    <link rel="stylesheet" href="dakdak-spot-info.css">
+
+    <core-ajax
+      id="ajax-delete"
+      url="{{$.globals.config.apiUrl}}spot/{{spot.id}}"
+      method="DELETE"
+      on-core-response="{{deletedHandler}}"></core-ajax>
+    <core-ajax
+      id="ajax-save"
+      url="{{$.globals.config.apiUrl}}spot/{{spot.id}}"
+      method="PUT"
+      handleAs="json"
+      params="{{spot}}"
+      on-core-response="{{savedHandler}}"></core-ajax>
+
+
+    <template if="{{!editMode}}">
+      <p>{{spot.id}}: {{spot.name}}</p>
+      <paper-button raised on-click="{{toggleEditMode}}">Muokkaa</paper-button>
+    </template>
+
+    <template if="{{editMode}}">
+      <paper-input
+        label="Spotin nimi"
+        floatingLabel
+        value="{{spot.name}}"></paper-input>
+
+      <paper-input
+        label="Spotin sijainnin hakusana"
+        floatingLabel
+        value="{{spot.location_search_string}}"></paper-input>
+
+      <google-map-search
+        map="{{map}}"
+        query="{{spot.location_search_string}}"
+        result="{{mapResult}}"></google-map-search>
+
+      <google-map
+        map="{{map}}"
+        zoom="14"
+        latitude="{{mapResult.latitude}}"
+        longitude="{{mapResult.longitude}}">
+        <google-map-marker
+          latitude="{{mapResult.latitude}}"
+          longitude="{{mapResult.longitude}}"
+          title="{{spot.name}}"></google-map-marker>
+      </google-map>
+
+      <paper-button raised on-click="{{saveSpot}}">Tallenna</paper-button>
+      <paper-button raised on-click="{{deleteSpot}}">Poista</paper-button>
+
+      <div>Result: {{mapResult.latitude}}, {{mapResult.longitude}}</div>
+
+    </template>
+
+    <paper-toast id="toast" text="{{toastText}}">
+    </paper-toast>
+
+  </template>
+  <script>
+    (function () {
+      Polymer({
+        ready: function() {
+          this.editMode = false;
+          this.toastText = '';
+
+          this.addEventListener('google-map-search-result', function(args) {
+            console.log(args.detail);
+          });
+        },
+
+        spotChanged: function(keke, esa) {
+        },
+
+        toggleEditMode: function() {
+          this.editMode = !this.editMode;
+        },
+
+        saveSpot: function() {
+          this.spot.latitude = this.mapResult.latitude;
+          this.spot.longitude = this.mapResult.longitude;
+
+          this.$['ajax-save'].go();
+        },
+
+        deleteSpot: function() {
+          this.$['ajax-delete'].go();
+        },
+
+        savedHandler: function(event, result) {
+          this.spot = _.extend(this.spot, result.response);
+          this.editMode = false;
+
+          this.showToast('Muutokset spottiin tallennettu');
+        },
+
+        deletedHandler: function(event, result) {
+          this.fire('spot-deleted', { id: this.spot.id });
+        },
+
+        showToast: function(text) {
+          this.toastText = text;
+          this.$.toast.show(3000);
+        }
+      });
+    })();
+  </script>
+</polymer-element>

@@ -1,0 +1,20 @@
+{
+  "name": "dakdak-polymer-test",
+  "version": "0.0.0",
+  "dependencies": {
+    "core-elements": "Polymer/core-elements#^0.5.1",
+    "paper-elements": "Polymer/paper-elements#^0.5.1",
+    "polymer": "Polymer/polymer#^0.5.4",
+    "director": "~1.2.8",
+    "app-router": "~2.6.1",
+    "ajax-form": "~2.0.0",
+    "lodash": "~3.9.2",
+    "paper-toast": "Polymer/paper-toast#~0.5.6",
+    "core-list": "Polymer/core-list#~0.5.6",
+    "google-map": "GoogleWebComponents/google-map#~0.4.2"
+  },
+  "devDependencies": {},
+  "resolutions": {
+    "webcomponentsjs": "0.7.1"
+  }
+}
