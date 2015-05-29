@@ -1,0 +1,58 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<polymer-element name="dakdak-file-uploader" attributes="">
+  <template>
+    <dakdak-globals id="globals"></dakdak-globals>
+    <link rel="stylesheet" href="dakdak-file-uploader.css">
+
+    <core-ajax
+      auto
+      id="ajax-s3link-get"
+      url="{{$.globals.config.apiUrl}}s3link"
+      method="GET"
+      handleAs="json"
+      on-core-response="{{s3linkResponse}}"></core-ajax>
+
+    <core-ajax
+      url="{{s3link.signed_request}}"
+      id="ajax-s3-send"
+      headers='{"x-amz-acl": "public-read"}'
+      params='{"alt":"json", "q":"chrome"}'
+      method="PUT"
+      handleAs="json"
+      on-core-response="{{handleResponse}}"></core-ajax>
+
+    <h3>Kuvaupload</h3>
+
+    <input type="file" name="kekefile" id="vanillafile" on-change="{{setFiles}}">
+    <paper-button raised on-click="{{doFileUpload}}">Upload</paper-button>
+
+  </template>
+
+  <script>
+    (function () {
+      Polymer({
+        created: function() {
+          this.s3link = {};
+        },
+
+        setFiles: function(e, detail, sender) {
+
+          this.$['ajax-s3-send'].body = sender.files[0];
+          debugger;
+          // Override default type set by core-ajax.
+          // Allow browser to set the mime multipart content type itself.
+          this.$['ajax-s3-send'].contentType = sender.files[0].type;
+        },
+
+        s3linkResponse: function(event, result) {
+          this.s3link = result.response;
+        },
+
+        doFileUpload: function() {
+          this.$['ajax-s3-send'].go();
+        }
+      });
+    })();
+  </script>
+</polymer-element>
