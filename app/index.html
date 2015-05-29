@@ -64,7 +64,8 @@
         </core-toolbar>
 
         <!-- Main Content -->
-        <div layout horizontal center-center fit>
+        <div layout vertical center-center fit>
+          <dakdak-file-uploader></dakdak-file-uploader>
           <dakdak-person-list></dakdak-person-list>
           <dakdak-spot-list></dakdak-spot-list>
         </div>
@@ -75,12 +76,7 @@
   </template>
 
   <script>
-    var template = document.querySelector('template[is="auto-binding"]');
-    template.pages = [
-      {name: 'Koti', hash: 'home'},
-      {name: 'Käyttäjät', hash: 'users'},
-      {name: 'app', hash: 'three'}
-    ];
+
   </script>
 
   <!-- build:js scripts/app.js -->
