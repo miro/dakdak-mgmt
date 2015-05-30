@@ -11,16 +11,23 @@
       url="{{$.globals.config.apiUrl}}s3link"
       method="GET"
       handleAs="json"
-      on-core-response="{{s3linkResponse}}"></core-ajax>
+      on-core-response="{{handleS3linkResponse}}"></core-ajax>
+
+    <core-ajax
+      id="ajax-img-create"
+      url="{{$.globals.config.apiUrl}}image"
+      method="POST"
+      params="{{imageModel}}"
+      handleAs="json"
+      on-core-response="{{handleImgCreateResponse}}"></core-ajax>
 
     <core-ajax
       url="{{s3link.signed_request}}"
-      id="ajax-s3-send"
+      id="ajax-s3-upload"
       headers='{"x-amz-acl": "public-read"}'
-      params='{"alt":"json", "q":"chrome"}'
       method="PUT"
-      handleAs="json"
-      on-core-response="{{handleResponse}}"></core-ajax>
+      handleAs="xml"
+      on-core-response="{{handleS3UploadResponse}}"></core-ajax>
 
     <h3>Kuvaupload</h3>
 
@@ -34,23 +41,30 @@
       Polymer({
         created: function() {
           this.s3link = {};
+          this.imageModel = {};
         },
 
         setFiles: function(e, detail, sender) {
-
-          this.$['ajax-s3-send'].body = sender.files[0];
-          debugger;
-          // Override default type set by core-ajax.
-          // Allow browser to set the mime multipart content type itself.
-          this.$['ajax-s3-send'].contentType = sender.files[0].type;
+          this.$['ajax-s3-upload'].body = sender.files[0];
+          this.$['ajax-s3-upload'].contentType = sender.files[0].type;
         },
 
-        s3linkResponse: function(event, result) {
+        handleS3linkResponse: function(event, result) {
           this.s3link = result.response;
+
+          this.imageModel.s3id = this.s3link.s3id;
         },
 
         doFileUpload: function() {
-          this.$['ajax-s3-send'].go();
+          this.$['ajax-s3-upload'].go();
+        },
+
+        handleS3UploadResponse: function() {
+          this.$['ajax-img-create'].go();
+        },
+
+        handleImgCreateResponse: function(event, result, sender) {
+          _.extend(this.imageModel, result.response);
         }
       });
     })();
