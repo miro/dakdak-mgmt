@@ -3,6 +3,7 @@
 <polymer-element name="dakdak-file-uploader" attributes="">
   <template>
     <dakdak-globals id="globals"></dakdak-globals>
+    <dakdak-api-data id="apiData" state="{{appState}}"></dakdak-api-data>
     <link rel="stylesheet" href="dakdak-file-uploader.css">
 
     <core-ajax
@@ -44,6 +45,13 @@
           this.imageModel = {};
         },
 
+        ready: function() {
+          this.addEventListener('image-created', function(event, data, sender) {
+            // re-trigger to apiData
+            this.fire('image-created-keke', data);
+          });
+        },
+
         setFiles: function(e, detail, sender) {
           this.$['ajax-s3-upload'].body = sender.files[0];
           this.$['ajax-s3-upload'].contentType = sender.files[0].type;
@@ -65,6 +73,7 @@
 
         handleImgCreateResponse: function(event, result, sender) {
           _.extend(this.imageModel, result.response);
+          this.$.apiData.addModel('images', this.imageModel);
         }
       });
     })();

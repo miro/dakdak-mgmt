@@ -1,0 +1,56 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<polymer-element name="dakdak-api-data" attributes="state addModel">
+  <template>
+    <dakdak-globals id="globals"></dakdak-globals>
+    <core-signals on-core-signal-image-created="{{handleImageCreated}}"></core-signals>
+
+    <core-ajax
+      id="images"
+      url="{{$.globals.config.apiUrl}}image"
+      method="GET"
+      handleAs="json"
+      on-core-response="{{handleImgListResponse}}"></core-ajax>
+
+  </template>
+  <script>
+    (function () {
+      var state = {
+        images: {
+          models: [],
+          inited: false
+        }
+      };
+
+      Polymer({
+        ready: function() {
+          var self = this;
+          this.state = state;
+
+          for (var type in state) {
+            if (!state[type].inited) {
+              this.state[type].inited = true;
+              this.$[type].go();
+            }
+          }
+
+          this.addModel = function(type, model) {
+            this.state[type].models.push(model);
+          };
+
+        },
+
+        handleImageCreated: function(event, newImg, sender) {
+          debugger;
+          this.state.images.models.push(newImg);
+        },
+
+        handleImgListResponse: function(event, result) {
+          console.log('Images fetched');
+          var self = this;
+          _.each(result.response, function(obj) { self.state.images.models.push(obj); });
+        }
+      });
+    })();
+  </script>
+</polymer-element>

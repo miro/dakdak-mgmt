@@ -1,0 +1,38 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<polymer-element name="dakdak-image-list" attributes="">
+  <template>
+    <link rel="stylesheet" href="dakdak-image-list.css">
+    <dakdak-api-data id="apiData" state="{{appState}}"></dakdak-api-data>
+
+    <dakdak-file-uploader></dakdak-file-uploader>
+
+
+    <h3>Kuvat</h3>
+      <paper-button raised on-click="{{test}}">Kuvatest</paper-button>
+
+    <template repeat="{{image in imageList}}">
+      <dakdak-image-info image="{{image}}"></dakdak-image-info>
+    </template>
+
+  </template>
+  <script>
+    (function () {
+      Polymer({
+        // define element prototype here
+        ready: function() {
+          this.imageList = this.appState.images.models;
+          console.log(this.imageList);
+
+          this.addEventListener('image-created-temp', function(event, model, sender) {
+            debugger;
+          });
+        },
+
+        test: function() {
+          this.fire('image-created');
+        }
+      });
+    })();
+  </script>
+</polymer-element>

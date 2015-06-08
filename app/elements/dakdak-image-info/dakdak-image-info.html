@@ -1,0 +1,17 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<polymer-element name="dakdak-image-info" attributes="image">
+  <template>
+    <link rel="stylesheet" href="dakdak-image-info.css">
+
+    <p>{{image.id}}</p>
+    <img class="preview" src="http://dakdak.s3.eu-central-1.amazonaws.com/{{image.s3id}}" alt="">
+  </template>
+  <script>
+    (function () {
+      Polymer({
+        // define element prototype here
+      });
+    })();
+  </script>
+</polymer-element>
