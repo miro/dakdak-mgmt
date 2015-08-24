@@ -25,7 +25,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <span>{{image.id}}</span>
     <iron-image
       class="preview"
-      src="[[imageSrc]]"
+      src="[[ _generateImgSrc(image) ]]"
       sizing="contain"
       alt=""></iron-image>
   </template>
@@ -49,6 +49,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       ready: function() {
+      _generateImgSrc: function() {
+        if (!this.image) return;
+        return this.$$('#globals').config.amazonBucketUrl + this.image.s3id;
+      },
       },
 
       _generateImgUrl: function() {
