@@ -34,6 +34,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       last-response="{{image}}"></iron-ajax>
 
     <iron-ajax
+      id="ajax-save"
+      url="[[ _generateImgApiUrl(id) ]]"
+      method="PUT"
+      content-type="application/json"
+      handle-as="json"
+      body="[[ image ]]"
+      last-response="{{image}}"></iron-ajax>
+
+    <iron-ajax
       id="ajax-delete"
       url="[[ _generateImgApiUrl(id) ]]"
       method="DELETE"
@@ -47,6 +56,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       sizing="contain"
       alt=""></iron-image>
 
+    <paper-input
+      label="Tempun nimi"
+      floatingLabel
+      value="{{image.trickName}}"></paper-input>
+    <iron-autogrow-textarea
+      placeholder="Kuvan kuvaus"
+      bind-value="{{image.description}}"></iron-autogrow-textarea>
+
+    <paper-button raised on-tap="saveImage">Tallenna</paper-button>
     <paper-button raised on-tap="deleteImage">Poista</paper-button>
 
   </template>
@@ -71,6 +89,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       idChanged: function() {
         this.$$('#ajax-get').generateRequest();
+      },
+
+      saveImage: function() {
+        this.$$('#ajax-save').generateRequest();
       },
 
       deleteImage: function() {

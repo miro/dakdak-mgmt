@@ -3,6 +3,7 @@
   "private": true,
   "dependencies": {
     "google-map": "GoogleWebComponents/google-map#~1.0.5",
+    "iron-autogrow-textarea": "PolymerElements/iron-autogrow-textarea#~1.0.4",
     "iron-elements": "PolymerElements/iron-elements#1.0.0",
     "iron-image": "PolymerElements/iron-image#~1.0.2",
     "iron-list": "PolymerElements/iron-list#~1.0.3",
