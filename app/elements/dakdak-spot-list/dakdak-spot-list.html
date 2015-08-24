@@ -1,32 +1,49 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 
-<polymer-element name="dakdak-spot-list" attributes="spots">
-
+<dom-module id="dakdak-spot-list">
+  <style>
+    :host {
+      display: block;
+    }
+  </style>
   <template>
-    <link rel="stylesheet" href="dakdak-spot-list.css">
+
     <dakdak-globals id="globals"></dakdak-globals>
 
-    <core-ajax
+    <iron-ajax
       auto
       id="ajax-spot-all"
-      url="{{$.globals.config.apiUrl}}spot"
-      handleAs="json"
-      on-core-response="{{handleResponse}}"
-      response="{{spots}}"></core-ajax>
+      url="[[apiUrl]]"
+      handle-as="json"
+      last-response="{{spots}}"></iron-ajax>
 
-    <core-ajax
+    <iron-ajax
       id="ajax-spot-create"
-      url="{{$.globals.config.apiUrl}}spot"
+      url="[[apiUrl]]"
+      content-type="application/json"
       method="POST"
-      handleAs="json"
-      params="{{newSpot}}"
-      on-core-response="{{newSpotResponse}}"></core-ajax>
+      handle-as="json"
+      body="{{newSpot}}"
+      last-response="{{newSpotResponse}}"
+      on-response="_handleSpotCreate"></iron-ajax>
 
+    <dakdak-spot-info></dakdak-spot-info>
 
-
-    <h3>Spotit</h3>
-    <template repeat="{{ spot in spots }}">
-      <dakdak-spot-info spot="{{ spot }}"></dakdak-spot-info>
+    <template is="dom-repeat" items="{{spots}}">
+      <dakdak-spot-info spot="{{item}}"></dakdak-spot-info>
     </template>
 
     <h4>Luo uusi</h4>
@@ -35,34 +52,63 @@
       floatingLabel
       value="{{newSpot.name}}"></paper-input>
 
-    <paper-button raised on-tap="{{createNewSpot}}" label="Luo">Luo Spotti</paper-button>
+    <paper-button raised on-tap="_createNewSpot" label="Luo">
+      Luo Spotti
+    </paper-button>
 
   </template>
-
   <script>
-    (function () {
-      Polymer({
-        created: function() {
-          this.newSpot = {};
-        },
-        ready: function(args) {
-          var self = this;
+  (function() {
+    Polymer({
+      is: 'dakdak-spot-list',
 
-          this.addEventListener('spot-deleted', function(event) {
-            self.spots = _.filter(self.spots, function(spot) {
-              return spot.id !== event.detail.id;
-            });
-          })
+      properties: {
+        apiUrl: {
+          type: String,
+          // for some reason this needs a parameter in order to get executed?
+          computed: '_generateApiUrl(spots)',
+          notify: true
         },
 
-        createNewSpot: function() {
-          this.$['ajax-spot-create'].go();
+        newSpotResponse: Object,
+
+        spots: {
+          type: Array,
+          notify: true
         },
 
-        newSpotResponse: function(event, result) {
-          this.spots.push(result.response);
-        }
-      });
-    })();
+        newSpot: {
+          type: Object,
+          notify: true,
+          value: { name: 'spotin nimi' }
+        },
+
+        newSpotResponse: Object
+      },
+
+      ready: function() {
+        var self = this;
+
+        this.addEventListener('spot-deleted', function(event) {
+          self.spots = _.filter(self.spots, function(spot) {
+            return spot.id !== event.detail.id;
+          });
+        });
+      },
+
+      _generateApiUrl: function() {
+        return this.$$('#globals').config.apiUrl + 'spot';
+      },
+
+     _createNewSpot: function() {
+        this.$$('#ajax-spot-create').generateRequest();
+      },
+
+      _handleSpotCreate: function(response) {
+        this.push('spots', this.newSpotResponse);
+      }
+
+    });
+  })();
   </script>
-</polymer-element>
+</dom-module>

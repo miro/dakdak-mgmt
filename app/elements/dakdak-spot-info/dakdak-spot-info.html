@@ -1,30 +1,58 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
 
-<polymer-element name="dakdak-spot-info" attributes="spot">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="../../bower_components/google-map/google-map.html">
+<link rel="import" href="../../bower_components/google-map/google-map-search.html">
+<link rel="import" href="../../bower_components/google-map/google-map-marker.html">
+
+
+<dom-module id="dakdak-spot-info">
+  <style>
+    :host {
+      display: block;
+    }
+
+    google-map {
+      height: 400px;
+    }
+  </style>
   <template>
     <dakdak-globals id="globals"></dakdak-globals>
-    <link rel="stylesheet" href="dakdak-spot-info.css">
 
-    <core-ajax
+    <iron-ajax
       id="ajax-delete"
-      url="{{$.globals.config.apiUrl}}spot/{{spot.id}}"
+      url="{{spotUrl}}"
       method="DELETE"
-      on-core-response="{{deletedHandler}}"></core-ajax>
-    <core-ajax
+      on-response="_handleDelete"></iron-ajax>
+    <iron-ajax
       id="ajax-save"
-      url="{{$.globals.config.apiUrl}}spot/{{spot.id}}"
+      url="{{spotUrl}}"
       method="PUT"
+      content-type="application/json"
       handleAs="json"
-      params="{{spot}}"
-      on-core-response="{{savedHandler}}"></core-ajax>
+      body="{{spot}}"
+      on-response="_handleSave"></iron-ajax>
 
+    <h5>Spotti</h5>
 
-    <template if="{{!editMode}}">
-      <p>{{spot.id}}: {{spot.name}}</p>
-      <paper-button raised on-click="{{toggleEditMode}}">Muokkaa</paper-button>
+    <template is="dom-if" if="{{!editMode}}">
+      <p>
+        <span>{{spot.id}}</span>: <span>{{spot.name}}</span>
+      </p>
+      <paper-button raised on-tap="_toggleEditMode">Muokkaa</paper-button>
     </template>
 
-    <template if="{{editMode}}">
+    <template is="dom-if" if="{{editMode}}">
       <paper-input
         label="Spotin nimi"
         floatingLabel
@@ -33,81 +61,186 @@
       <paper-input
         label="Spotin sijainnin hakusana"
         floatingLabel
-        value="{{spot.location_search_string}}"></paper-input>
+        value="{{query}}"></paper-input>
+
 
       <google-map-search
+        id="search"
         map="{{map}}"
-        query="{{spot.location_search_string}}"
+        query="[[query]]"
+        currentMapArea
         result="{{mapResult}}"></google-map-search>
-
       <google-map
         map="{{map}}"
         zoom="14"
-        latitude="{{mapResult.latitude}}"
-        longitude="{{mapResult.longitude}}">
+        latitude="[[mapResult.latitude]]"
+        longitude="[[mapResult.longitude]]"
+        fit-to-markers>
+
         <google-map-marker
           latitude="{{mapResult.latitude}}"
           longitude="{{mapResult.longitude}}"
           title="{{spot.name}}"></google-map-marker>
       </google-map>
 
-      <paper-button raised on-click="{{saveSpot}}">Tallenna</paper-button>
-      <paper-button raised on-click="{{deleteSpot}}">Poista</paper-button>
+      <paper-button raised on-click="saveSpot">Tallenna</paper-button>
+      <paper-button raised on-click="deleteSpot">Poista</paper-button>
 
-      <div>Result: {{mapResult.latitude}}, {{mapResult.longitude}}</div>
-
+      <div>Koordinaatit:
+        <span>{{mapResult.latitude}}</span>,
+        <span>{{mapResult.longitude}}</span>
+      </div>
     </template>
-
-    <paper-toast id="toast" text="{{toastText}}">
-    </paper-toast>
 
   </template>
   <script>
-    (function () {
-      Polymer({
-        ready: function() {
-          this.editMode = false;
-          this.toastText = '';
+  (function() {
+    Polymer({
+      is: 'dakdak-spot-info',
 
-          this.addEventListener('google-map-search-result', function(args) {
-            console.log(args.detail);
-          });
+      properties: {
+        spot: {
+          type: Object,
+          notify: true
         },
 
-        spotChanged: function(keke, esa) {
+        spotUrl: {
+          type: String,
+          computed: '_generateSpotUrl(spot)',
+          notify: true
         },
 
-        toggleEditMode: function() {
-          this.editMode = !this.editMode;
+        editMode: {
+          type: Boolean,
+          value: false,
+          notify: true
         },
 
-        saveSpot: function() {
-          this.spot.latitude = this.mapResult.latitude;
-          this.spot.longitude = this.mapResult.longitude;
-
-          this.$['ajax-save'].go();
+        map: {
+          type: Object,
+          notify: true
         },
 
-        deleteSpot: function() {
-          this.$['ajax-delete'].go();
+        query: {
+          type: String,
+          value: null
         },
 
-        savedHandler: function(event, result) {
-          this.spot = _.extend(this.spot, result.response);
-          this.editMode = false;
+        // latitude: {
+        //   type: Number,
+        //   value: null,
+        //   notify: true
+        // },
+        // longitude: {
+        //   type: Number,
+        //   value: null,
+        //   notify: true
+        // },
 
-          this.showToast('Muutokset spottiin tallennettu');
-        },
 
-        deletedHandler: function(event, result) {
-          this.fire('spot-deleted', { id: this.spot.id });
-        },
-
-        showToast: function(text) {
-          this.toastText = text;
-          this.$.toast.show(3000);
+        mapResult: {
+          type: Object,
+          notify: true,
+          value: { latitude: null, longitude: null },
+          // value: function() { return []; },
+          // observer: 'keke'
+          // reflectToAttribute: true
         }
-      });
-    })();
+      },
+
+      observers: [
+        'searchQueryChanged(query)',
+        'search(query,map,location,currentMapArea)'
+        // '_updateLocation(latitude,longitude)'
+      ],
+
+
+      _generateSpotUrl: function(spot) {
+        return this.$$('#globals').config.apiUrl + 'spot/' + spot.id;
+      },
+
+      _toggleEditMode: function() {
+        if (this.editMode) {
+          this.editMode = !this.editMode;
+        }
+        else {
+          // we are entering edit mode
+          this.query = this.spot.location_search_string;
+          this.mapResult.latitude = this.spot.latitude ? this.spot.latitude : 0;
+          this.mapResult.longitude = this.spot.longitude ? this.spot.longitude : 0;
+
+          this.editMode = true;
+        }
+      },
+
+      _handleSave: function() {
+        this.editMode = false;
+        // todo toast the savE?
+      },
+
+      _handleDelete: function(event, result) {
+        this.fire('spot-deleted', { id: this.spot.id });
+      },
+
+      saveSpot: function() {
+        this.spot.location_search_string = this.query;
+        this.spot.latitude = this.mapResult.latitude;
+        this.spot.longitude = this.mapResult.longitude;
+
+        this.$$('#ajax-save').generateRequest();
+      },
+
+      deleteSpot: function() {
+        this.$$('#ajax-delete').generateRequest();
+      },
+
+
+      searchQueryChanged: function(newValue, oldValue) {
+        if (this.editMode) {
+          this.search();
+        }
+      },
+
+      /**
+       * Perform a search using for `query` for the search term.
+       */
+      search: function() {
+        if (this.query && this.map) {
+
+          var places = new google.maps.places.PlacesService(this.map);
+          // if (this.types && typeof this.types == 'string') {
+          //   var types = this.types.split(' ');
+          // }
+          if (!this.globalSearch) {
+            var bounds = this.map.getBounds();
+          } else if (this.radius) {
+            var radius = this.radius;
+            var location = this.location ? this.location : this.map.getCenter();
+          }
+          places.textSearch({
+            query: this.query,
+            // types: types,
+            bounds: bounds,
+            radius: radius,
+            location: location
+          }, this._gotResults.bind(this));
+        }
+      },
+
+      _gotResults: function(results, status) {
+        if (!results) return;
+
+        var firstResult = results[0];
+
+        // obtain lat/long from geometry
+        firstResult.latitude  = firstResult.geometry.location.lat();
+        firstResult.longitude = firstResult.geometry.location.lng();
+
+        this.mapResult = firstResult;
+
+      }
+
+    });
+  })();
   </script>
-</polymer-element>
+</dom-module>

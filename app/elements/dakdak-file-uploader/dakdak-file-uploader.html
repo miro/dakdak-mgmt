@@ -1,81 +1,136 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
 
-<polymer-element name="dakdak-file-uploader" attributes="">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+
+<dom-module id="dakdak-file-uploader">
+  <style>
+    :host {
+      display: block;
+    }
+  </style>
+
   <template>
     <dakdak-globals id="globals"></dakdak-globals>
-    <dakdak-api-data id="apiData" state="{{appState}}"></dakdak-api-data>
-    <link rel="stylesheet" href="dakdak-file-uploader.css">
 
-    <core-ajax
-      auto
+    <iron-ajax
+      verbose="true"
       id="ajax-s3link-get"
-      url="{{$.globals.config.apiUrl}}s3link"
+      url="http://localhost:5000/api/v0/s3link"
       method="GET"
-      handleAs="json"
-      on-core-response="{{handleS3linkResponse}}"></core-ajax>
+      handle-as="json"
+      last-response="{{s3link}}"
+      on-response="handleS3linkResponse"></iron-ajax>
 
-    <core-ajax
+    <iron-ajax
       id="ajax-img-create"
-      url="{{$.globals.config.apiUrl}}image"
+      url="http://localhost:5000/api/v0/image"
       method="POST"
-      params="{{imageModel}}"
+      content-type="application/json"
       handleAs="json"
-      on-core-response="{{handleImgCreateResponse}}"></core-ajax>
+      body="{{imageModel}}"
+      last-response="{{newImageResponse}}"
+      on-response="handleImgCreateResponse"></iron-ajax>
 
-    <core-ajax
-      url="{{s3link.signed_request}}"
+    <iron-ajax
+      url="[[s3link.signed_request]]"
       id="ajax-s3-upload"
       headers='{"x-amz-acl": "public-read"}'
       method="PUT"
       handleAs="xml"
-      on-core-response="{{handleS3UploadResponse}}"></core-ajax>
+      on-response="handleS3UploadResponse"></iron-ajax>
 
     <h3>Kuvaupload</h3>
 
-    <input type="file" name="kekefile" id="vanillafile" on-change="{{setFiles}}">
-    <paper-button raised on-click="{{doFileUpload}}">Upload</paper-button>
+    <input type="file" name="kekefile" id="vanillafile" on-change="setFiles">
+    <paper-button raised on-click="doFileUpload">Upload</paper-button>
 
   </template>
 
   <script>
-    (function () {
-      Polymer({
-        created: function() {
-          this.s3link = {};
-          this.imageModel = {};
+  (function() {
+    Polymer({
+      is: 'dakdak-file-uploader',
+
+      properties: {
+        s3link: {
+          type: Object,
+          notify: true
         },
 
-        ready: function() {
-          this.addEventListener('image-created', function(event, data, sender) {
-            // re-trigger to apiData
-            this.fire('image-created-keke', data);
-          });
+        imageModel: {
+          type: Object,
+          notify: true,
+          value: function() { return {}; }
         },
 
-        setFiles: function(e, detail, sender) {
-          this.$['ajax-s3-upload'].body = sender.files[0];
-          this.$['ajax-s3-upload'].contentType = sender.files[0].type;
+        newImageResponse: {
+          type: Object,
+          notify: true
         },
 
-        handleS3linkResponse: function(event, result) {
-          this.s3link = result.response;
-
-          this.imageModel.s3id = this.s3link.s3id;
+        files: {
+          type: Array,
+          notify: true
         },
 
-        doFileUpload: function() {
-          this.$['ajax-s3-upload'].go();
-        },
-
-        handleS3UploadResponse: function() {
-          this.$['ajax-img-create'].go();
-        },
-
-        handleImgCreateResponse: function(event, result, sender) {
-          _.extend(this.imageModel, result.response);
-          this.$.apiData.addModel('images', this.imageModel);
+        apiUrl: {
+          type: String,
+          // computed: '_generateApiUrl(s3link)',
+          notify: true
         }
-      });
-    })();
+      },
+
+      ready: function() {
+        this.apiUrl = this.$$('#globals').config.apiUrl;
+        this.$$('#ajax-s3link-get').generateRequest();
+
+        this.addEventListener('image-created', function(event, data, sender) {
+          // re-trigger to apiData
+          this.fire('image-created-keke', data);
+        });
+      },
+
+      setFiles: function(e, detail, sender) {
+
+        this.$$('#ajax-s3-upload').body = this.$$('#vanillafile').files[0];
+        this.$$('#ajax-s3-upload').contentType = this.$$('#vanillafile').files[0].type;
+      },
+
+      handleS3linkResponse: function(event, result) {
+        // debugger;
+        // this.s3link = result.response;
+        console.log(this.apiUrl, this.s3link);
+
+        this.imageModel.s3id = this.s3link.s3id;
+      },
+
+      doFileUpload: function() {
+        debugger;
+        this.$$('#ajax-s3-upload').generateRequest();
+      },
+
+      handleS3UploadResponse: function() {
+        this.$$('#ajax-img-create').generateRequest();
+      },
+
+      handleImgCreateResponse: function(event, result, sender) {
+        // this.push('images', this.newImageResponse);
+      },
+
+      _generateApiUrl: function(arg) {
+        return this.$$('#globals').config.apiUrl;
+      }
+    });
+  })();
   </script>
-</polymer-element>
+</dom-module>

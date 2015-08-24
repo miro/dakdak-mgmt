@@ -1,32 +1,49 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
 
-<polymer-element name="dakdak-person-list" attributes="persons">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../../bower_components/lodash-element/lodash.js.html">
+
+<dom-module id="dakdak-person-list">
+  <style>
+    :host {
+      display: block;
+    }
+  </style>
 
   <template>
-    <link rel="stylesheet" href="dakdak-person-list.css">
     <dakdak-globals id="globals"></dakdak-globals>
 
-    <core-ajax
+    <iron-ajax
       auto
       id="ajax-person-all"
-      url="{{$.globals.config.apiUrl}}person"
-      handleAs="json"
-      on-core-response="{{handleResponse}}"
-      response="{{persons}}"></core-ajax>
+      url="http://localhost:5000/api/v0/person"
+      handle-as="json"
+      last-response="{{persons}}"></iron-ajax>
 
-    <core-ajax
+    <iron-ajax
       id="ajax-person-create"
-      url="{{$.globals.config.apiUrl}}person"
+      url="http://localhost:5000/api/v0/person"
+      content-type="application/json"
       method="POST"
-      handleAs="json"
-      params="{{newPerson}}"
-      on-core-response="{{newPersonResponse}}"></core-ajax>
+      handle-as="json"
+      body="{{newPerson}}"
+      last-response="{{newPersonResponse}}"
+      on-response="_handlePersonCreate"></iron-ajax>
 
-
-
-    <h3>Henkilöt</h3>
-    <template repeat="{{ person in persons }}">
-      <dakdak-person-info person="{{person}}"></dakdak-person-info>
+    <template is="dom-repeat" items="{{persons}}">
+      <dakdak-person-info person="{{item}}"></dakdak-person-info>
     </template>
 
     <h4>Luo uusi</h4>
@@ -39,34 +56,48 @@
       floatingLabel
       value="{{newPerson.displayName}}"></paper-input>
 
-    <paper-button raised on-tap="{{createNewPerson}}" label="Luo">Luo henkilö</paper-button>
+    <paper-button raised id="createPersonBtn" label="Luo" on-tap="_createNewPerson">
+      Luo henkilö
+    </paper-button>
 
   </template>
-
   <script>
-    (function () {
-      Polymer({
-        created: function() {
-          this.newPerson = {};
-        },
-        ready: function(args) {
-          var self = this;
+  (function() {
+    Polymer({
+      is: 'dakdak-person-list',
 
-          this.addEventListener('person-deleted', function(event) {
-            self.persons = _.filter(self.persons, function(person) {
-              return person.id !== event.detail.id;
-            });
-          })
+      properties: {
+        newPerson: {
+          type: Object,
+          value: {},
+          notify: true
         },
 
-        createNewPerson: function() {
-          this.$['ajax-person-create'].go();
-        },
+        newPersonResponse: Object,
 
-        newPersonResponse: function(event, result) {
-          this.persons.push(result.response);
-        }
-      });
-    })();
+        persons: Array
+      },
+
+      ready: function(args) {
+        var self = this;
+
+        this.addEventListener('person-deleted', function(event) {
+          self.persons = _.filter(self.persons, function(person) {
+            return person.id !== event.detail.id;
+          });
+        });
+      },
+
+      _handlePersonCreate: function(response, element, juuh) {
+        this.push('persons', this.newPersonResponse);
+        this.newPerson = {};
+      },
+
+      _createNewPerson: function() {
+        this.$$('#ajax-person-create').generateRequest();
+      }
+
+    });
+  })();
   </script>
-</polymer-element>
+</dom-module>
