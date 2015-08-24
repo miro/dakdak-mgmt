@@ -24,6 +24,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     google-map {
       height: 400px;
+      margin-bottom: 15px;
+    }
+
+    .editmode__wrap {
+      padding: 10px 5px;
     }
   </style>
 
@@ -56,44 +61,47 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <!-- "edit mode template" -->
     <template is="dom-if" if="{{editMode}}">
-      <paper-input
-        label="Spotin nimi"
-        floatingLabel
-        value="{{spot.name}}"></paper-input>
+      <paper-material class="editmode__wrap" elevation="2">
+        <paper-input
+          label="Spotin nimi"
+          floatingLabel
+          value="{{spot.name}}"></paper-input>
 
-      <paper-input
-        label="Spotin sijainnin hakusana"
-        floatingLabel
-        value="{{query}}"></paper-input>
+        <paper-input
+          label="Spotin sijainnin hakusana"
+          floatingLabel
+          value="{{query}}"></paper-input>
 
 
-      <google-map-search
-        id="search"
-        map="{{map}}"
-        query="[[query]]"
-        currentMapArea
-        result="{{mapResult}}"></google-map-search>
-      <google-map
-        map="{{map}}"
-        zoom="14"
-        latitude="[[mapResult.latitude]]"
-        longitude="[[mapResult.longitude]]"
-        fit-to-markers>
+        <google-map-search
+          id="search"
+          map="{{map}}"
+          query="[[query]]"
+          currentMapArea
+          result="{{mapResult}}"></google-map-search>
+        <google-map
+          map="{{map}}"
+          zoom="14"
+          latitude="[[mapResult.latitude]]"
+          longitude="[[mapResult.longitude]]"
+          fit-to-markers>
 
-        <google-map-marker
-          latitude="{{mapResult.latitude}}"
-          longitude="{{mapResult.longitude}}"
-          title="{{spot.name}}"></google-map-marker>
-      </google-map>
+          <google-map-marker
+            latitude="{{mapResult.latitude}}"
+            longitude="{{mapResult.longitude}}"
+            title="{{spot.name}}"></google-map-marker>
+        </google-map>
 
-      <paper-button raised on-click="saveSpot">Tallenna</paper-button>
-      <paper-button raised on-click="deleteSpot">Poista</paper-button>
-      <paper-button raised on-click="_toggleEditMode">Sulje</paper-button>
+        <p>Koordinaatit:
+          <span>{{mapResult.latitude}}</span>,
+          <span>{{mapResult.longitude}}</span>
+        </p>
 
-      <div>Koordinaatit:
-        <span>{{mapResult.latitude}}</span>,
-        <span>{{mapResult.longitude}}</span>
-      </div>
+        <paper-button raised on-click="saveSpot">Tallenna</paper-button>
+        <paper-button raised on-click="deleteSpot">Poista</paper-button>
+        <paper-button raised on-click="_toggleEditMode">Sulje</paper-button>
+
+    </paper-material>
     </template>
 
   </template>
