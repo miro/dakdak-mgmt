@@ -21,13 +21,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       height: 200px;
     }
   </style>
+
   <template>
+    <dakdak-globals id="globals"></dakdak-globals>
+
+    <iron-ajax
+      id="ajax-get"
+      url="[[ _generateImgApiUrl(id) ]]"
+      method="GET"
+      content-type="application/json"
+      handle-as="json"
+      last-response="{{image}}"></iron-ajax>
+
+    <iron-ajax
+      id="ajax-delete"
+      url="[[ _generateImgApiUrl(id) ]]"
+      method="DELETE"
+      on-response="_handleDelete"></iron-ajax>
+
     <span>{{image.id}}</span>
+
     <iron-image
       class="preview"
       src="[[ _generateImgSrc(image) ]]"
       sizing="contain"
       alt=""></iron-image>
+
+    <paper-button raised on-tap="deleteImage">Poista</paper-button>
+
   </template>
   <script>
   (function() {
@@ -35,28 +56,40 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       is: 'dakdak-image-info',
 
       properties: {
+        id: {
+          type: Number,
+          notify: true,
+          observer: 'idChanged'
+        },
+
         image: {
           type: Object,
           notify: true,
           reflectToAttribute: true
-        },
-
-        imageSrc: {
-          type: String,
-          notify: true,
-          computed: '_generateImgUrl(image)'
         }
       },
 
-      ready: function() {
+      idChanged: function() {
+        this.$$('#ajax-get').generateRequest();
+      },
+
+      deleteImage: function() {
+        this.$$('#ajax-delete').generateRequest();
+      },
+
       _generateImgSrc: function() {
         if (!this.image) return;
         return this.$$('#globals').config.amazonBucketUrl + this.image.s3id;
       },
+
+      _generateImgApiUrl: function(id) {
+        return this.$$('#globals').config.apiUrl + 'image/' + id;
       },
 
-      _generateImgUrl: function() {
-        return 'http://dakdak.s3.eu-central-1.amazonaws.com/' + this.image.s3id;
+      _handleDelete: function() {
+        this.fire('image-deleted', { id: this.image.id });
+        delete this.image;
+        app.route = 'upload';
       }
     });
   })();

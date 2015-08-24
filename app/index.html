@@ -90,7 +90,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           <a data-route="upload" href="/upload">
             <iron-icon icon="info"></iron-icon>
-            <span>Upload</span>
+            <span>Kuvat</span>
           </a>
         </paper-menu>
       </paper-scroll-header-panel>
@@ -150,6 +150,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <dakdak-file-uploader></dakdak-file-uploader>
 
                 <dakdak-image-list></dakdak-image-list>
+              </paper-material>
+            </section>
+
+            <section data-route="kuva">
+              <paper-material elevation="1">
+                <h2 class="paper-font-display2">Kuva</h2>
+                <dakdak-image-info id="{{params.id}}"></dakdak-image-info>
               </paper-material>
             </section>
 

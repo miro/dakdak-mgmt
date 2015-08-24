@@ -110,7 +110,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       doFileUpload: function() {
-        debugger;
         this.$$('#ajax-s3-upload').generateRequest();
       },
 
@@ -119,7 +118,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       handleImgCreateResponse: function(event, result, sender) {
-        // this.push('images', this.newImageResponse);
+        this.fire('image-created', { model: this.newImageResponse });
       },
 
       _generateApiUrl: function(arg) {

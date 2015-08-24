@@ -17,6 +17,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
   </style>
   <template>
+    <dakdak-globals id="globals"></dakdak-globals>
     <iron-ajax
       auto
       id="ajax-person-all"
@@ -24,9 +25,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       handle-as="json"
       last-response="{{images}}"></iron-ajax>
 
-    <template is="dom-repeat" items="{{images}}">
-      <dakdak-image-info image="{{item}}"></dakdak-image-info>
-    </template>
+    <iron-list items="[[images]]" as="item">
+      <template>
+        <div>
+          <a href="[[ getLinkUrl(item) ]]"><span>[[item.id]]</span></a>
+        </div>
+      </template>
+    </iron-list>
 
   </template>
   <script>
@@ -39,7 +44,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: Array,
           notify: true
         }
-      }
+      },
+
+
+      getLinkUrl: function(item) {
+        return '/kuva/' + item.id;
+      },
+
+      ready: function() {
+        var self = this;
+
+        this.addEventListener('image-deleted', function(event, keke) {
+          // NOTE/TODO: this is not catching the image-deleted event right now!
+          console.log('image deleted listener');
+          self.images = _.filter(self.images, function(image) {
+            return image.id !== event.detail.id;
+          });
+        });
+
+        this.addEventListener('image-created', function(event, model) {
+          debugger;
+        });
+      },
     });
   })();
   </script>
