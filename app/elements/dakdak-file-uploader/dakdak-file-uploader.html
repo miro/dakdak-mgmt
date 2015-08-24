@@ -85,7 +85,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         apiUrl: {
           type: String,
-          // computed: '_generateApiUrl(s3link)',
           notify: true
         }
       },
@@ -107,10 +106,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       handleS3linkResponse: function(event, result) {
-        // debugger;
-        // this.s3link = result.response;
-        console.log(this.apiUrl, this.s3link);
-
         this.imageModel.s3id = this.s3link.s3id;
       },
 

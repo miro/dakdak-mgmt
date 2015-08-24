@@ -26,6 +26,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       height: 400px;
     }
   </style>
+
+  <!-- "display mode template" -->
   <template>
     <dakdak-globals id="globals"></dakdak-globals>
 
@@ -52,6 +54,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <paper-button raised on-tap="_toggleEditMode">Muokkaa</paper-button>
     </template>
 
+    <!-- "edit mode template" -->
     <template is="dom-if" if="{{editMode}}">
       <paper-input
         label="Spotin nimi"
@@ -126,32 +129,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           value: null
         },
 
-        // latitude: {
-        //   type: Number,
-        //   value: null,
-        //   notify: true
-        // },
-        // longitude: {
-        //   type: Number,
-        //   value: null,
-        //   notify: true
-        // },
-
-
         mapResult: {
           type: Object,
           notify: true,
-          value: { latitude: null, longitude: null },
-          // value: function() { return []; },
-          // observer: 'keke'
-          // reflectToAttribute: true
+          value: { latitude: null, longitude: null }
         }
       },
 
       observers: [
         'searchQueryChanged(query)',
         'search(query,map,location,currentMapArea)'
-        // '_updateLocation(latitude,longitude)'
       ],
 
 
@@ -237,7 +224,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         firstResult.longitude = firstResult.geometry.location.lng();
 
         this.mapResult = firstResult;
-
       }
 
     });
