@@ -64,6 +64,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       placeholder="Kuvan kuvaus"
       bind-value="{{image.description}}"></iron-autogrow-textarea>
 
+    <p>Julkaise kuva?
+      <paper-toggle-button checked="{{image.published}}"></paper-toggle-button>
+    </p>
+
     <paper-button raised on-tap="saveImage">Tallenna</paper-button>
     <paper-button raised on-tap="deleteImage">Poista</paper-button>
     <paper-button raised on-tap="returnToImageListing">Palaa</paper-button>
