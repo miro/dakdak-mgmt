@@ -21,7 +21,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <iron-ajax
       auto
       id="ajax-person-all"
-      url="http://localhost:5000/api/v0/image"
+      url="[[ apiUrl ]]"
       handle-as="json"
       last-response="{{images}}"></iron-ajax>
 
@@ -42,6 +42,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       properties: {
         images: {
           type: Array,
+          notify: true
+        },
+
+        apiUrl: {
+          type: String,
+          // for some reason this needs a parameter in order to get executed?
+          computed: '_generateApiUrl(images)',
           notify: true
         }
       },
@@ -66,6 +73,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           debugger;
         });
       },
+
+       _generateApiUrl: function() {
+        return this.$$('#globals').config.apiUrl + 'image';
+      }
     });
   })();
   </script>
